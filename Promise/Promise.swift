@@ -1,15 +1,34 @@
 
 import Foundation
 
-enum NewResult<T> {
-    case value(T)
-    case error(Error)
+public enum NewResult<T> {
+    case success(T)
+    case failure(Error)
 }
 
-class Future<T> {
+extension NewResult {
+    var value: T? {
+        switch self {
+        case .success(let value):
+            return value
+        default: return nil
+        }
+    }
+    
+    var error: Error? {
+        switch self {
+        case .failure(let error):
+            return error
+        default: return nil
+        }
+    }
+}
+
+public class Future<T> {
     fileprivate var result: NewResult<T>? {
         didSet { result.map(report) }
     }
+    
     private lazy var callbacks = [(NewResult<T>) -> Void]()
 
     func observe(with callback: @escaping (NewResult<T>) -> Void) {
@@ -22,30 +41,58 @@ class Future<T> {
             callback(result)
         }
     }
+    
+    public func debugResult() -> NewResult<T>? {
+        return result
+    }
+    
+    public func debugValue() -> T? {
+        return debugResult()?.value
+    }
+    
+    public func debugError() -> Error? {
+        return debugResult()?.error
+    }
+}
+
+class Promise<T>: Future<T> {
+    init(value: T? = nil) {
+        super.init()
+        result = value.map(NewResult.success)
+    }
+    
+    func fullfill(with value: T) {
+        result = .success(value)
+    }
+    
+    func reject(with error: Error) {
+        result = .failure(error)
+    }
 }
 
 extension Future {
-    func chained<NextValue>(with closure: @escaping (T) throws -> Future<NextValue>) -> Future<NextValue> {
-        let promise = Promise<NextValue>()
+    // prepare  Future by caller
+    func flatMap<U>(_ closure: @escaping (T) throws -> Future<U>) -> Future<U> {
+        let promise = Promise<U>()
 
         observe { result in
             switch result {
-            case .value(let value):
+            case .success(let value):
                 do {
                     let future = try closure(value)
 
                     future.observe { result in
                         switch result {
-                        case .value(let value):
-                            promise.resolve(with: value)
-                        case .error(let error):
+                        case .success(let value):
+                            promise.fullfill(with: value)
+                        case .failure(let error):
                             promise.reject(with: error)
                         }
                     }
                 } catch {
                     promise.reject(with: error)
                 }
-            case .error(let error):
+            case .failure(let error):
                 promise.reject(with: error)
             }
         }
@@ -53,24 +100,18 @@ extension Future {
         return promise
     }
 
-    func transformed<NextValue>(with closure: @escaping (T) throws -> NextValue) -> Future<NextValue> {
-        return chained { value in
+    /// simple transform
+    func map<U>(_ closure: @escaping (T) throws -> U) -> Future<U> {
+        return flatMap { value in
             return try Promise(value: closure(value))
         }
     }
 }
 
-class Promise<T>: Future<T> {
-    init(value: T? = nil) {
-        super.init()
-        result = value.map(NewResult.value)
-    }
-
-    func resolve(with value: T) {
-        result = .value(value)
-    }
-
-    func reject(with error: Error) {
-        result = .error(error)
+extension Future {
+    func then<U>(_ closure: @escaping (T) throws -> Future<U>) -> Future<U> {
+        return self.flatMap(closure)
     }
 }
+
+
