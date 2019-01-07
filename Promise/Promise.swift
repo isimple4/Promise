@@ -114,4 +114,37 @@ extension Future {
     }
 }
 
+extension Future {
+    @discardableResult
+    public func done(_ closure: @escaping (T) -> Void) -> Future<T> {
+        self.observe { result in
+            switch result {
+            case .success(let value):
+                closure(value)
+            default: break
+            }
+        }
+        return self
+    }
+}
+
+extension Future {
+    @discardableResult
+    func `catch`(_ callback: @escaping (Error)->()) -> Future<T> {
+        let p = Promise<T>()
+        
+        self.observe { result in
+            switch result {
+            case .success(let v):
+                p.fullfill(with: v)
+            case .failure(let e):
+                callback(e)
+                p.reject(with: e)
+            }
+        }
+        
+        return p
+    }
+}
+
 
