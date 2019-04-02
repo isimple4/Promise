@@ -1,7 +1,9 @@
 
 import Foundation
 
+// Add var for easier result value/error getter
 extension Result {
+    /// result value, nil if no value
     var value: Success? {
         switch self {
         case .success(let value):
@@ -10,6 +12,7 @@ extension Result {
         }
     }
 
+    /// result error, nil if no error
     var error: Failure? {
         switch self {
         case .failure(let error):
@@ -19,44 +22,70 @@ extension Result {
     }
 }
 
+/**
+ Actual stores for promise, provide functions to add to observation list.
+*/
 public class Future<V, E> where E : Error {
+    /**
+     Final result, will fire  calls to callback list when value is set.
+     After calls, _isPending changes to false. No more callbacks will be triggered
+    */
     fileprivate var _result: Result<V, E>? {
-        didSet { _result.map(report) }
+        didSet {
+            _result.map(report)
+            _isPending = false
+        }
     }
     
-    private lazy var callbacks = [(Result<V, E>) -> Void]()
+    /// Stores for observation callback list.
+    private lazy var _callbacks = [(Result<V, E>) -> Void]()
+    
+    /// Default true. Turn to false if self promise fulfilled/rejected.
+    var _isPending: Bool = true
 
-    func observe(with callback: @escaping (Result<V, E>) -> Void) {
-        callbacks.append(callback)
-        _result.map(callback)
-    }
-
+    /// Trigger callbacks to list
     private func report(result: Result<V, E>) {
-        for callback in callbacks {
+        for callback in _callbacks {
             callback(result)
         }
     }
     
+    /// Add callback to list
+    func observe(with callback: @escaping (Result<V, E>) -> Void) {
+        _callbacks.append(callback)
+        _result.map(callback)
+    }
+}
+
+// Helper functions
+extension Future {
+    /// Result getter
     public func debugResult() -> Result<V, E>? {
         return _result
     }
     
+    /// Result value getter helper
     public func debugValue() -> V? {
         return debugResult()?.value
     }
     
+    /// Result error getter helper
     public func debugError() -> Error? {
         return debugResult()?.error
     }
 }
 
+// Inheritted from Future, promise functions to update self result.
 public class Promise<V, E>: Future<V, E> where E : Error {
-
+    /// Success with result
     public func fullfill(with value: V) {
+        guard _isPending else { return }
         _result = .success(value)
     }
     
+    /// Fail with error
     public func reject(with error: E) {
+        guard _isPending else { return }
         _result = .failure(error)
     }
 }

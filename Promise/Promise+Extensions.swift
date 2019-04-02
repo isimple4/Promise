@@ -2,6 +2,7 @@
 
 import Foundation
 
+// All extensions for promise.
 extension Future {
     // prepare  Future by caller
     public func flatMap<NextV>(_ closure: @escaping (V) -> Future<NextV, E>) -> Future<NextV, E> {
@@ -55,15 +56,29 @@ extension Future {
 
 extension Future {
     @discardableResult
-    public func done(_ closure: @escaping (V) -> Void) -> Future<V, E> {
+    public func get(_ closure: @escaping (V) -> Void) -> Future<V, E> {
+        return self.map {
+            closure($0)
+            return $0
+        }
+    }
+}
+
+extension Future {
+    @discardableResult
+    public func done(_ closure: @escaping (V) -> Void) -> Future<Void, E> {
+        let p = Promise<Void, E>()
+
         self.observe { result in
             switch result {
             case .success(let value):
                 closure(value)
-            default: break
+                p.fullfill(with: ())
+            case .failure(let error):
+                p.reject(with: error)
             }
         }
-        return self
+        return p
     }
 }
 
@@ -85,3 +100,4 @@ extension Future {
         return p
     }
 }
+

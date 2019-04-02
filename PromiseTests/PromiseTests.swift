@@ -9,7 +9,10 @@
 import XCTest
 @testable import Promise
 
-
+enum TestError: Swift.Error {
+    case e1
+    case e2
+}
 
 class PromiseTests: XCTestCase {
 
@@ -26,13 +29,19 @@ class PromiseTests: XCTestCase {
         XCTAssertEqual(p.debugValue()!, 2)
     }
     
-    func testFullfillReject() {
+    func testFullfill() {
         let p = Promise<String, Error>()
         XCTAssertNil(p.debugValue())
         
         p.fullfill(with: "3x")
         XCTAssertEqual(p.debugValue()!, "3x")
         
+       
+    }
+    
+    func testReject() {
+        let p = Promise<String, Error>()
+
         let err1 = NSError(domain: "cd", code: 12, userInfo: nil)
         p.reject(with: err1)
         
@@ -89,6 +98,64 @@ class PromiseTests: XCTestCase {
         
         let err1 = NSError(domain: "cd", code: 12, userInfo: nil)
         p.reject(with: err1)
+        wait(for: [exp], timeout: 1.0)
+    }
+    
+    
+    func testMultiSuccess() {
+        let p = Promise<Int, Never>()
+        XCTAssertNotNil(p)
+        
+        p.fullfill(with: 2)
+        p.fullfill(with: 3)
+
+        XCTAssertEqual(p.debugValue()!, 2)
+    }
+    
+    func testMultiFail() {
+        let p = Promise<Int, TestError>()
+        XCTAssertNotNil(p)
+        
+        p.reject(with: TestError.e1)
+        p.reject(with: TestError.e2)
+        
+        XCTAssertEqual(p.debugError() as! TestError, TestError.e1)
+    }
+    
+    func testDoneCatch() {
+        let p = Promise<Int, TestError>()
+        let exp = expectation(description: "done catch not working")
+        
+        _ = p
+            .map { return String($0) }
+            .done { _ in
+                XCTFail()
+            }
+            .catch {
+                XCTAssertEqual($0 as! TestError, TestError.e1)
+                exp.fulfill()
+            }
+        
+        p.reject(with: TestError.e1)
+        wait(for: [exp], timeout: 1.0)
+    }
+    
+    func testGet() {
+        let p = Promise<Int, TestError>()
+        let exp = expectation(description: "get not working")
+        
+        _ = p
+            .get {
+                XCTAssertEqual($0, 2)
+                exp.fulfill()
+            }
+            .done {
+                XCTAssertEqual($0, 2)
+            }
+        
+        
+        
+        p.fullfill(with: 2)
         wait(for: [exp], timeout: 1.0)
     }
 
