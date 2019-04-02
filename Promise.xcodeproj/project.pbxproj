@@ -11,6 +11,7 @@
 		4BC6611323485B29008CE37F /* PromiseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BC6611223485B29008CE37F /* PromiseTests.swift */; };
 		4BC6611523485B29008CE37F /* Promise.h in Headers */ = {isa = PBXBuildFile; fileRef = 4BC6610723485B29008CE37F /* Promise.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4BC6611F23485B29008CE37F /* Promise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BC6611E23485B29008CE37F /* Promise.swift */; };
+		4BC66265234992EA008CE37F /* Promise+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BC66264234992EA008CE37F /* Promise+Extensions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -31,6 +32,7 @@
 		4BC6611223485B29008CE37F /* PromiseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiseTests.swift; sourceTree = "<group>"; };
 		4BC6611423485B29008CE37F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4BC6611E23485B29008CE37F /* Promise.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Promise.swift; sourceTree = "<group>"; };
+		4BC66264234992EA008CE37F /* Promise+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Promise+Extensions.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -74,6 +76,7 @@
 			isa = PBXGroup;
 			children = (
 				4BC6611E23485B29008CE37F /* Promise.swift */,
+				4BC66264234992EA008CE37F /* Promise+Extensions.swift */,
 				4BC6610723485B29008CE37F /* Promise.h */,
 				4BC6610823485B29008CE37F /* Info.plist */,
 			);
@@ -199,6 +202,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4BC6611F23485B29008CE37F /* Promise.swift in Sources */,
+				4BC66265234992EA008CE37F /* Promise+Extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -280,7 +284,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -338,7 +342,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				VALIDATE_PRODUCT = YES;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
@@ -366,7 +370,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -391,7 +395,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.simple4.Promise;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -409,7 +413,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.simple4.PromiseTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -427,7 +431,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.simple4.PromiseTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;

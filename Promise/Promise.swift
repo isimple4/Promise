@@ -1,21 +1,16 @@
 
 import Foundation
 
-public enum NewResult<T> {
-    case success(T)
-    case failure(Error)
-}
-
-extension NewResult {
-    var value: T? {
+extension Result {
+    var value: Success? {
         switch self {
         case .success(let value):
             return value
         default: return nil
         }
     }
-    
-    var error: Error? {
+
+    var error: Failure? {
         switch self {
         case .failure(let error):
             return error
@@ -24,29 +19,29 @@ extension NewResult {
     }
 }
 
-public class Future<T> {
-    fileprivate var result: NewResult<T>? {
-        didSet { result.map(report) }
+public class Future<V, E> where E : Error {
+    fileprivate var _result: Result<V, E>? {
+        didSet { _result.map(report) }
     }
     
-    private lazy var callbacks = [(NewResult<T>) -> Void]()
+    private lazy var callbacks = [(Result<V, E>) -> Void]()
 
-    func observe(with callback: @escaping (NewResult<T>) -> Void) {
+    func observe(with callback: @escaping (Result<V, E>) -> Void) {
         callbacks.append(callback)
-        result.map(callback)
+        _result.map(callback)
     }
 
-    private func report(result: NewResult<T>) {
+    private func report(result: Result<V, E>) {
         for callback in callbacks {
             callback(result)
         }
     }
     
-    public func debugResult() -> NewResult<T>? {
-        return result
+    public func debugResult() -> Result<V, E>? {
+        return _result
     }
     
-    public func debugValue() -> T? {
+    public func debugValue() -> V? {
         return debugResult()?.value
     }
     
@@ -55,96 +50,17 @@ public class Future<T> {
     }
 }
 
-class Promise<T>: Future<T> {
-    init(value: T? = nil) {
-        super.init()
-        result = value.map(NewResult.success)
+public class Promise<V, E>: Future<V, E> where E : Error {
+
+    public func fullfill(with value: V) {
+        _result = .success(value)
     }
     
-    func fullfill(with value: T) {
-        result = .success(value)
-    }
-    
-    func reject(with error: Error) {
-        result = .failure(error)
+    public func reject(with error: E) {
+        _result = .failure(error)
     }
 }
 
-extension Future {
-    // prepare  Future by caller
-    func flatMap<U>(_ closure: @escaping (T) throws -> Future<U>) -> Future<U> {
-        let promise = Promise<U>()
 
-        observe { result in
-            switch result {
-            case .success(let value):
-                do {
-                    let future = try closure(value)
-
-                    future.observe { result in
-                        switch result {
-                        case .success(let value):
-                            promise.fullfill(with: value)
-                        case .failure(let error):
-                            promise.reject(with: error)
-                        }
-                    }
-                } catch {
-                    promise.reject(with: error)
-                }
-            case .failure(let error):
-                promise.reject(with: error)
-            }
-        }
-
-        return promise
-    }
-
-    /// simple transform
-    func map<U>(_ closure: @escaping (T) throws -> U) -> Future<U> {
-        return flatMap { value in
-            return try Promise(value: closure(value))
-        }
-    }
-}
-
-extension Future {
-    func then<U>(_ closure: @escaping (T) throws -> Future<U>) -> Future<U> {
-        return self.flatMap(closure)
-    }
-}
-
-extension Future {
-    @discardableResult
-    public func done(_ closure: @escaping (T) -> Void) -> Future<T> {
-        self.observe { result in
-            switch result {
-            case .success(let value):
-                closure(value)
-            default: break
-            }
-        }
-        return self
-    }
-}
-
-extension Future {
-    @discardableResult
-    func `catch`(_ callback: @escaping (Error)->()) -> Future<T> {
-        let p = Promise<T>()
-        
-        self.observe { result in
-            switch result {
-            case .success(let v):
-                p.fullfill(with: v)
-            case .failure(let e):
-                callback(e)
-                p.reject(with: e)
-            }
-        }
-        
-        return p
-    }
-}
 
 

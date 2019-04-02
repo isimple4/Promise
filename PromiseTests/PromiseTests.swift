@@ -18,14 +18,16 @@ class PromiseTests: XCTestCase {
     }
 
     func testInitWithValue() {
-        let p = Promise(value: 2)
+        
+        let p = Promise<Int, Never>()
         XCTAssertNotNil(p)
         
+        p.fullfill(with: 2)
         XCTAssertEqual(p.debugValue()!, 2)
     }
     
     func testFullfillReject() {
-        let p = Promise<String>()
+        let p = Promise<String, Error>()
         XCTAssertNil(p.debugValue())
         
         p.fullfill(with: "3x")
@@ -40,7 +42,7 @@ class PromiseTests: XCTestCase {
     }
     
     func testMap() {
-        let p = Promise<String>()
+        let p = Promise<String, Never>()
         let exp = expectation(description: "map not working")
         
         let s1 = "hi xx"
@@ -53,7 +55,7 @@ class PromiseTests: XCTestCase {
     }
     
     func testMap2() {
-        let p = Promise<Int>()
+        let p = Promise<Int, Never>()
         let exp = expectation(description: "map not working")
         
         _ = p
@@ -69,7 +71,7 @@ class PromiseTests: XCTestCase {
     }
     
     func testCatch() {
-        let p = Promise<Int>()
+        let p = Promise<Int, Error>()
         let exp = expectation(description: "catch not working")
         
         _ = p
