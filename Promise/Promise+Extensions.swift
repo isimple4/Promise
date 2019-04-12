@@ -64,11 +64,18 @@ extension Future {
     }
 }
 
+
+public enum PromsieErrors: Error {
+    /// validation not passed
+    case notValid
+}
+
+
 extension Future {
     @discardableResult
     public func done(_ closure: @escaping (V) -> Void) -> Future<Void> {
         let p = Promise<Void>()
-
+        
         self.observe { result in
             switch result {
             case .success(let value):
@@ -84,7 +91,7 @@ extension Future {
 
 extension Future {
     @discardableResult
-    public func `catch`(_ callback: @escaping (Error)->()) -> Future<V> {
+    public func `catch`(_ callback: @escaping (Error) -> Void) -> Future<V> {
         let p = Promise<V>()
         
         self.observe { result in
@@ -99,5 +106,93 @@ extension Future {
         
         return p
     }
+}
+
+extension Future {
+    public func onFullfill(_ callback: @escaping (V) -> Void) {
+        self.observe { result in
+            if case .success(let v) = result {
+                callback(v)
+            }
+        }
+    }
+    
+    public func onReject(_ callback: @escaping (Error) -> Void) {
+        self.observe { result in
+            if case .failure(let e) = result {
+                callback(e)
+            }
+        }
+    }
+}
+
+extension Future {
+    @discardableResult
+    public func always(_ callback: @escaping () -> Void) -> Future<V> {
+        let p = Promise<V>()
+        
+        self.observe { result in
+            callback()
+            p.complete(with: result)
+        }
+        
+        return p
+    }
+}
+
+extension Future {
+    @discardableResult
+    public func delay(_ seconds: Double, on queue: DispatchQueue) -> Future<V> {
+        let p = Promise<V>()
+        
+        self.observe { result in
+            queue.asyncAfter(deadline: .now() + seconds, execute: {
+                p.complete(with: result)
+            })
+        }
+        
+        return p
+    }
+}
+
+extension Future {
+    @discardableResult
+    public func validate(_ callback: @escaping (V) -> Bool) -> Future<V> {
+        let p = Promise<V>()
+        
+        self.observe { result in
+            switch result {
+            case .success(let v):
+                if callback(v) {
+                    p.fullfill(with: v)
+                } else {
+                    p.reject(with: PromsieErrors.notValid)
+                }
+            case .failure(let e):
+                p.reject(with: e)
+            }
+        }
+        
+        return p
+    }
+}
+
+extension Future {
+    @discardableResult
+    public func recover(_ callback: @escaping (Error) -> V) -> Future<V> {
+        let p = Promise<V>()
+        
+        self.observe { result in
+            switch result {
+            case .success(let v):
+                p.fullfill(with: v)
+            case .failure(let e):
+                p.fullfill(with: callback(e))
+            }
+        }
+        
+        return p
+    }
+    
 }
 

@@ -158,5 +158,78 @@ class PromiseTests: XCTestCase {
         p.fullfill(with: 2)
         wait(for: [exp], timeout: 1.0)
     }
+    
+    func testAlways() {
+        var i = 1
+        let p1 = Promise<Int>()
+        p1.always {
+            i += 1
+        }
+        
+        
+        let p2 = Promise<String>()
+        p2.always {
+            i *= 3
+        }
+        
+        p1.fullfill(with: 123)
+        p2.reject(with: TestError.e1)
+        
+        XCTAssertEqual(i, 6)
+        
+    }
+    
+    func testDelay() {
+        let exp = expectation(description: "delay not working")
+        
+        let p1 = Promise<Int>()
+        
+        var d1: Date?
+        p1.delay(0.2, on: .main).onFullfill { _ in
+            d1 = Date()
+            
+            XCTAssertTrue(Thread.isMainThread)
+            exp.fulfill()
+        }
+        
+        let d2 = Date()
+        p1.fullfill(with: 4)
+        
+        waitForExpectations(timeout: 0.5, handler: nil)
+        
+        XCTAssertNotNil(d1)
+        XCTAssertGreaterThan(d1!.timeIntervalSince(d2), 0.2)
+    }
+    
+    func testValidate() {
+        let exp1 = expectation(description: "validate not working")
+        
+        let p1 = Promise<Int>()
+        
+        
+        p1.validate { $0 > 12 }
+            .onReject { _ in exp1.fulfill() }
+        
+        p1.fullfill(with: 11)
+        waitForExpectations(timeout: 0.1, handler: nil)
+    }
+    
+    func testRecover() {
+        let exp1 = expectation(description: "recover not working")
+        
+        let p1 = Promise<Int>()
+        
+        p1.recover { _ in return 2 }
+            .get {
+                XCTAssertEqual($0, 2)
+                
+                exp1.fulfill()
+        }
+        
+        p1.reject(with: TestError.e2)
+        
+        wait(for: [exp1], timeout: 1.0)
+        
+    }
 
 }

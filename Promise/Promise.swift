@@ -77,7 +77,7 @@ extension Future {
 
 // Inheritted from Future, promise functions to update self result.
 public class Promise<V>: Future<V> {
-    /// Success with result
+    /// Success with value
     public func fullfill(with value: V) {
         guard _isPending else { return }
         _result = .success(value)
@@ -87,6 +87,16 @@ public class Promise<V>: Future<V> {
     public func reject(with error: Error) {
         guard _isPending else { return }
         _result = .failure(error)
+    }
+    
+    /// Complete with result
+    public func complete(with result: Result<V, Error>) {
+        switch result {
+        case .success(let value):
+            fullfill(with: value)
+        case .failure(let error):
+            reject(with: error)
+        }
     }
 }
 
