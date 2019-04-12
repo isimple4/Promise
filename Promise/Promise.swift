@@ -25,12 +25,12 @@ extension Result {
 /**
  Actual stores for promise, provide functions to add to observation list.
 */
-public class Future<V, E> where E : Error {
+public class Future<V> {
     /**
      Final result, will fire  calls to callback list when value is set.
      After calls, _isPending changes to false. No more callbacks will be triggered
     */
-    fileprivate var _result: Result<V, E>? {
+    fileprivate var _result: Result<V, Error>? {
         didSet {
             _result.map(report)
             _isPending = false
@@ -38,20 +38,20 @@ public class Future<V, E> where E : Error {
     }
     
     /// Stores for observation callback list.
-    private lazy var _callbacks = [(Result<V, E>) -> Void]()
+    private lazy var _callbacks = [(Result<V, Error>) -> Void]()
     
     /// Default true. Turn to false if self promise fulfilled/rejected.
     var _isPending: Bool = true
 
     /// Trigger callbacks to list
-    private func report(result: Result<V, E>) {
+    private func report(result: Result<V, Error>) {
         for callback in _callbacks {
             callback(result)
         }
     }
     
     /// Add callback to list
-    func observe(with callback: @escaping (Result<V, E>) -> Void) {
+    func observe(with callback: @escaping (Result<V, Error>) -> Void) {
         _callbacks.append(callback)
         _result.map(callback)
     }
@@ -60,7 +60,7 @@ public class Future<V, E> where E : Error {
 // Helper functions
 extension Future {
     /// Result getter
-    public func debugResult() -> Result<V, E>? {
+    public func debugResult() -> Result<V, Error>? {
         return _result
     }
     
@@ -76,7 +76,7 @@ extension Future {
 }
 
 // Inheritted from Future, promise functions to update self result.
-public class Promise<V, E>: Future<V, E> where E : Error {
+public class Promise<V>: Future<V> {
     /// Success with result
     public func fullfill(with value: V) {
         guard _isPending else { return }
@@ -84,7 +84,7 @@ public class Promise<V, E>: Future<V, E> where E : Error {
     }
     
     /// Fail with error
-    public func reject(with error: E) {
+    public func reject(with error: Error) {
         guard _isPending else { return }
         _result = .failure(error)
     }

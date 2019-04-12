@@ -22,7 +22,7 @@ class PromiseTests: XCTestCase {
 
     func testInitWithValue() {
         
-        let p = Promise<Int, Never>()
+        let p = Promise<Int>()
         XCTAssertNotNil(p)
         
         p.fullfill(with: 2)
@@ -30,7 +30,7 @@ class PromiseTests: XCTestCase {
     }
     
     func testFullfill() {
-        let p = Promise<String, Error>()
+        let p = Promise<String>()
         XCTAssertNil(p.debugValue())
         
         p.fullfill(with: "3x")
@@ -40,7 +40,7 @@ class PromiseTests: XCTestCase {
     }
     
     func testReject() {
-        let p = Promise<String, Error>()
+        let p = Promise<String>()
 
         let err1 = NSError(domain: "cd", code: 12, userInfo: nil)
         p.reject(with: err1)
@@ -51,7 +51,7 @@ class PromiseTests: XCTestCase {
     }
     
     func testMap() {
-        let p = Promise<String, Never>()
+        let p = Promise<String>()
         let exp = expectation(description: "map not working")
         
         let s1 = "hi xx"
@@ -64,7 +64,7 @@ class PromiseTests: XCTestCase {
     }
     
     func testMap2() {
-        let p = Promise<Int, Never>()
+        let p = Promise<Int>()
         let exp = expectation(description: "map not working")
         
         _ = p
@@ -80,7 +80,7 @@ class PromiseTests: XCTestCase {
     }
     
     func testCatch() {
-        let p = Promise<Int, Error>()
+        let p = Promise<Int>()
         let exp = expectation(description: "catch not working")
         
         _ = p
@@ -103,7 +103,7 @@ class PromiseTests: XCTestCase {
     
     
     func testMultiSuccess() {
-        let p = Promise<Int, Never>()
+        let p = Promise<Int>()
         XCTAssertNotNil(p)
         
         p.fullfill(with: 2)
@@ -113,7 +113,7 @@ class PromiseTests: XCTestCase {
     }
     
     func testMultiFail() {
-        let p = Promise<Int, TestError>()
+        let p = Promise<Int>()
         XCTAssertNotNil(p)
         
         p.reject(with: TestError.e1)
@@ -123,7 +123,7 @@ class PromiseTests: XCTestCase {
     }
     
     func testDoneCatch() {
-        let p = Promise<Int, TestError>()
+        let p = Promise<Int>()
         let exp = expectation(description: "done catch not working")
         
         _ = p
@@ -141,7 +141,7 @@ class PromiseTests: XCTestCase {
     }
     
     func testGet() {
-        let p = Promise<Int, TestError>()
+        let p = Promise<Int>()
         let exp = expectation(description: "get not working")
         
         _ = p

@@ -5,8 +5,8 @@ import Foundation
 // All extensions for promise.
 extension Future {
     // prepare  Future by caller
-    public func flatMap<NextV>(_ closure: @escaping (V) -> Future<NextV, E>) -> Future<NextV, E> {
-        let p = Promise<NextV, E>()
+    public func flatMap<NextV>(_ closure: @escaping (V) -> Future<NextV>) -> Future<NextV> {
+        let p = Promise<NextV>()
         
         observe { result in
             switch result {
@@ -31,8 +31,8 @@ extension Future {
     }
     
     /// simple transform
-    public func map<NextV>(_ closure: @escaping (V) -> NextV) -> Future<NextV, E> {
-        let p = Promise<NextV, E>()
+    public func map<NextV>(_ closure: @escaping (V) -> NextV) -> Future<NextV> {
+        let p = Promise<NextV>()
         
         observe { result in
             switch result {
@@ -49,14 +49,14 @@ extension Future {
 }
 
 extension Future {
-    public func then<NextV>(_ closure: @escaping (V) -> Future<NextV, E>) -> Future<NextV, E> {
+    public func then<NextV>(_ closure: @escaping (V) -> Future<NextV>) -> Future<NextV> {
         return self.flatMap(closure)
     }
 }
 
 extension Future {
     @discardableResult
-    public func get(_ closure: @escaping (V) -> Void) -> Future<V, E> {
+    public func get(_ closure: @escaping (V) -> Void) -> Future<V> {
         return self.map {
             closure($0)
             return $0
@@ -66,8 +66,8 @@ extension Future {
 
 extension Future {
     @discardableResult
-    public func done(_ closure: @escaping (V) -> Void) -> Future<Void, E> {
-        let p = Promise<Void, E>()
+    public func done(_ closure: @escaping (V) -> Void) -> Future<Void> {
+        let p = Promise<Void>()
 
         self.observe { result in
             switch result {
@@ -84,8 +84,8 @@ extension Future {
 
 extension Future {
     @discardableResult
-    public func `catch`(_ callback: @escaping (Error)->()) -> Future<V, E> {
-        let p = Promise<V, E>()
+    public func `catch`(_ callback: @escaping (Error)->()) -> Future<V> {
+        let p = Promise<V>()
         
         self.observe { result in
             switch result {
