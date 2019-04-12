@@ -231,5 +231,27 @@ class PromiseTests: XCTestCase {
         wait(for: [exp1], timeout: 1.0)
         
     }
+    
+    func testOn() {
+        let testQueueLabel = "com.simple4"
+        let testQueue = DispatchQueue(label: testQueueLabel, attributes: [])
+        let testQueueKey = DispatchSpecificKey<Void>()
+        testQueue.setSpecific(key: testQueueKey, value: ())
+
+        let exp1 = expectation(description: "on queue not working")
+
+        let p1 = Promise<Int>()
+        
+        p1.on(testQueue).onFullfill { _ in
+            XCTAssertNotNil(DispatchQueue.getSpecific(key: testQueueKey), "callback should switch to queue")
+            
+            exp1.fulfill()
+        }
+        
+        p1.fullfill(with: 3)
+        
+        wait(for: [exp1], timeout: 1.0)
+
+    }
 
 }

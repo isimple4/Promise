@@ -196,3 +196,19 @@ extension Future {
     
 }
 
+extension Future {
+    /// Switch to specific queue
+    public func on(_ queue: DispatchQueue) -> Future<V> {
+        let p = Promise<V>()
+        
+        self.observe { result in
+            queue.async {
+                p.complete(with: result)
+            }
+        }
+        
+        return p
+    }
+}
+
+
