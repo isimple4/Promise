@@ -1,3 +1,3 @@
 # Promise
 
-![](https://github.com/isimple4/Promise/workflows/.github/swift.yml/badge.svg?branch=trial)
+![](https://github.com/isimple4/Promise/workflows/Swift/badge.svg?branch=trial)
